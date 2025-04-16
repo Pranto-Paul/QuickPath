@@ -4,6 +4,7 @@ const path = require("path");
 
 /**
  * Show path input with suggestion support
+ * @param {string} rootPath
  */
 async function showPathInput(rootPath) {
   let currentPath = "";
@@ -24,13 +25,16 @@ async function showPathInput(rootPath) {
       // no suggestions if path is invalid
     }
 
-    const userChoice = await vscode.window.showQuickPick(
-      [...suggestions, { label: "🔗 Enter Custom Path", alwaysShow: true }],
-      {
-        placeHolder: "Navigate folders with Tab or enter full path",
-        matchOnDescription: true,
-      }
-    );
+    const pick = [
+      ...suggestions,
+      { label: "🔗 Enter Custom Path", alwaysShow: true },
+    ];
+    if (rootPath !== dirPath)
+      pick.push({ label: "🔙 Go Back", alwaysShow: true });
+    const userChoice = await vscode.window.showQuickPick(pick, {
+      placeHolder: "Navigate folders with Tab or enter full path",
+      matchOnDescription: true,
+    });
 
     if (!userChoice) return;
 
@@ -40,6 +44,12 @@ async function showPathInput(rootPath) {
         placeHolder: "e.g. src/components/Button/index.tsx",
       });
       return path.join(currentPath, customInput || "");
+    }
+
+    if (userChoice.label === "🔙 Go Back") {
+      currentPath = path.dirname(currentPath);
+      console.log(currentPath);
+      continue;
     }
 
     currentPath = path.join(currentPath, userChoice.label);
