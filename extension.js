@@ -2,6 +2,14 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 
+//algorithm
+//------------------------------------------------------------
+// ctr + alt + N to open
+// write the path -> path will be created from the root dir
+// hit enter/return to create the file/folder and open the file
+// If already exists then open the file
+// If it was a folder then return
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -28,16 +36,39 @@ function activate(context) {
       const dir = path.dirname(fullPath);
 
       try {
-        // Create folders recursively
         fs.mkdirSync(dir, { recursive: true });
 
-        // Create file if it doesn't exist
-        if (!fs.existsSync(fullPath)) {
+        const isDir = path.extname(fullPath) === "";
+
+        if (isDir) {
+          try {
+            const fileExists = fs.existsSync(fullPath);
+            if (fileExists)
+              vscode.window.showWarningMessage(
+                `📂 File already exists: ${input}`
+              );
+            fs.mkdirSync(fullPath);
+            vscode.window.showInformationMessage("📁 Folder created.");
+          } catch (err) {
+            vscode.window.showErrorMessage("❌ Error: " + err.message);
+          }
+          return;
+        }
+
+        const fileExists = fs.existsSync(fullPath);
+
+        if (!fileExists) {
           fs.writeFileSync(fullPath, "");
           vscode.window.showInformationMessage(`✅ Created: ${input}`);
         } else {
-          vscode.window.showWarningMessage("⚠️ File already exists.");
+          vscode.window.showInformationMessage(
+            `📂 File already exists: ${input}`
+          );
         }
+
+        // Open the file in editor
+        const doc = await vscode.workspace.openTextDocument(fullPath);
+        await vscode.window.showTextDocument(doc);
       } catch (err) {
         vscode.window.showErrorMessage("❌ Error: " + err.message);
       }
