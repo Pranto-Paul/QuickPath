@@ -12,11 +12,21 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "quickpath.helloWorld",
-      "title": "Hello World"
-    }]
-  },
+  "commands": [
+    {
+      "command": "quickpath.createFileOrDir",
+      "title": "QuickPath: Create File/Dir"
+    }
+  ],
+  "keybindings": [
+    {
+      "command": "quickpath.createFileOrDir",
+      "key": "ctrl+alt+n",
+      "when": "editorTextFocus"
+    }
+  ]
+}
+,
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",

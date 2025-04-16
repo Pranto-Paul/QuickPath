@@ -1,36 +1,86 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-const vscode = require('vscode');
+const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+//algorithm
+//------------------------------------------------------------
+// ctr + alt + N to open
+// write the path -> path will be created from the root dir
+// hit enter/return to create the file/folder and open the file
+// If already exists then open the file
+// If it was a folder then return
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+  const disposable = vscode.commands.registerCommand(
+    "quickpath.createFileOrDir",
+    async function () {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders) {
+        vscode.window.showErrorMessage("Open a folder to use QuickPath.");
+        return;
+      }
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "quickpath" is now active!');
+      const rootPath = workspaceFolders[0].uri.fsPath;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('quickpath.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+      const input = await vscode.window.showInputBox({
+        prompt: "Enter path like: src/components/Button/index.tsx",
+        placeHolder: "e.g. pages/home/index.tsx",
+      });
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from QuickPath!');
-	});
+      if (!input) return;
 
-	context.subscriptions.push(disposable);
+      const fullPath = path.join(rootPath, input);
+      const dir = path.dirname(fullPath);
+
+      try {
+        fs.mkdirSync(dir, { recursive: true });
+
+        const isDir = path.extname(fullPath) === "";
+
+        if (isDir) {
+          try {
+            const fileExists = fs.existsSync(fullPath);
+            if (fileExists)
+              vscode.window.showWarningMessage(
+                `📂 File already exists: ${input}`
+              );
+            fs.mkdirSync(fullPath);
+            vscode.window.showInformationMessage("📁 Folder created.");
+          } catch (err) {
+            vscode.window.showErrorMessage("❌ Error: " + err.message);
+          }
+          return;
+        }
+
+        const fileExists = fs.existsSync(fullPath);
+
+        if (!fileExists) {
+          fs.writeFileSync(fullPath, "");
+          vscode.window.showInformationMessage(`✅ Created: ${input}`);
+        } else {
+          vscode.window.showInformationMessage(
+            `📂 File already exists: ${input}`
+          );
+        }
+
+        // Open the file in editor
+        const doc = await vscode.workspace.openTextDocument(fullPath);
+        await vscode.window.showTextDocument(doc);
+      } catch (err) {
+        vscode.window.showErrorMessage("❌ Error: " + err.message);
+      }
+    }
+  );
+
+  context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+  deactivate,
+};
