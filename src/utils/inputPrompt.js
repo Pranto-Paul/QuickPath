@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
-
+const { parsePathString } = require("./parser.js");
 /**
  * Show path input with suggestion support
  * @param {string} rootPath
@@ -43,19 +43,19 @@ async function showPathInput(rootPath) {
         prompt: "Enter file/folder path",
         placeHolder: "e.g. src/components/Button/index.tsx",
       });
-      return path.join(currentPath, customInput || "");
+      console.log(path.join(currentPath, customInput));
+      return parsePathString(path.join(currentPath, customInput));
     }
 
     if (userChoice.label === "🔙 Go Back") {
       currentPath = path.dirname(currentPath);
-      console.log(currentPath);
       continue;
     }
 
     currentPath = path.join(currentPath, userChoice.label);
     if (!userChoice.label.endsWith("/")) {
       // it's a file
-      return currentPath;
+      return [{ path: currentPath, isDir: false }];
     }
   }
 }
