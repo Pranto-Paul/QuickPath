@@ -2,7 +2,11 @@
 
 ## **Create FILES and FOLDER _lightning-fast_ ⚡ `WITHOUT EVER TOUCHING YOUR MOUSE 🔥`**
 
-[Watch the Demo Video](./demo.mp4)
+
+
+https://github.com/user-attachments/assets/7df8fe96-f715-4803-94ee-b0941f58dc37
+
+
 
 > **QuickPath** helps you stay in the **flow**. No more right-clicks, navigating file trees, or breaking focus. Just open the command palette, type a path, and BOOM🔥 — structure created.
 
