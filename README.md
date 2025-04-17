@@ -1,65 +1,137 @@
-# QuickPath
+# 🚀 QuickPath
 
-QuickPath is a Visual Studio Code extension that allows you to quickly create files and folders using just your keyboard. It simplifies your development workflow by eliminating the need to navigate through multiple menus or use the mouse.
+## **Create FILES and FOLDER _lightning-fast_ ⚡ `WITHOUT EVER TOUCHING YOUR MOUSE 🔥`**
 
-![QuickPath](image.png)
+[Watch the Demo Video](./demo.mp4)
 
-## Features
+> **QuickPath** helps you stay in the **flow**. No more right-clicks, navigating file trees, or breaking focus. Just open the command palette, type a path, and BOOM🔥 — structure created.
 
-- Quickly create new files and folders without leaving your keyboard.
-- Supports nested folder structures.
-- Intuitive command palette integration.
+## ✨ Features at a Glance
 
-## Installation
+⚡️ Instantly **create files and folders** from the command palette  
+🪜 Supports **deeply nested structures** — like `src/components/Nav/Item.jsx`  
+🎯 Execute **advanced path queries** — create multiple files and folders in one go  
+🚀 Blazingly fast and **seamless integration** with your workflow  
+🎹 Built for **keyboard-first developers** — keep your hands on the keys  
+🧩 **Zero setup required** — no config, no hassle, just install and go
+
+## ⚡ How It Works (Example)
+
+### Just follow these steps:
+
+1. Press:
+
+   - 🪟 **Windows/Linux**: `Ctrl + Alt + N`
+   - 🍎 **macOS**: `Cmd + Option + N`
+
+2. Run the command:  
+   🔍 `QuickPath: Create File or Folder`
+
+3. Type your desired path:  
+   ✍️ `src components Header Header.jsx`
+
+4. Hit `Enter` — that's it! Your structure is ready! 🎉
+
+## 📦 Installation
 
 1. Open **Visual Studio Code**.
-2. Go to the **Extensions** view by clicking on the Extensions icon in the Activity Bar on the side of the window.
-3. Search for `QuickPath`.
-4. Click **Install** on the QuickPath extension by [Pranto-Paul](https://github.com/Pranto-Paul).
+2. Navigate to the **Extensions** view:
+   - Shortcut: `Ctrl + Shift + X` (Windows/Linux) or `Cmd + Shift + X` (macOS)
+3. Search for **`QuickPath`**.
+4. Click **Install** on the extension by [Pranto-Paul](https://github.com/Pranto-Paul).
 
-## Usage
+🔗 Or install directly from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=pranto-paul.quickpath) _(replace with real link if available)_.
 
-1. Open the Command Palette:
-   - On Windows/Linux: `Ctrl+Alt+N`
-   - On macOS: `Cmd+Option+N`
-2. Type `QuickPath: Create File or Folder` and select it.
-3. Enter the desired file or folder path (e.g., `src/components/Button.js` or `assets/images/`).
-4. Press `Enter` to create the specified file or folder structure.
+## 🧠 Why Use QuickPath?
 
-## Requirements
+> **"I just want to create `src/components/Auth/Login.jsx` — why so many clicks?"**
 
-No additional requirements or dependencies.
+QuickPath eliminates the **friction**. Whether you're starting a new project or adding new components, you'll **save time, stay focused**, and feel like a productivity ninja. 🥷
 
-## Extension Settings
+## 🚀 Advanced Query Feature
 
-This extension does not contribute any settings.
+The **Advanced Query** feature allows you to create multiple files or folders in one go with powerful syntax.
 
-## Known Issues
+### 📁 Folder Creation with Spaces:
 
-Currently, there are no known issues. If you encounter any problems, please [open an issue](https://github.com/Pranto-Paul/QuickPath/issues).
+- Use **space** to create nested folders. Example:
+  - `src bro a.txt` → creates `src/bro/a.txt`
 
-## Release Notes
+### ✨ Creating Multiple Files/Folders (Siblings):
 
-### 1.0.0
+- Use **+** or **&** to create multiple sibling files/folders.
+- Make sure to **add space** before and after the operators `+` and `&`.
+  - Example:
+    - `src bro a.txt + b.html & c.css`
+    - Creates:
+      - `src/bro/a.txt`
+      - `src/bro/b.html`
+      - `src/bro/c.css`
+- **Note**: **+** and **&** can be used interchangeably.
 
-- Initial release of QuickPath.
+### 🔙 Navigating Backwards:
 
-## License
+- Use **..** (with spaces before and after) to navigate up a directory.
+  - Example: `src bro .. a.txt` → creates `a.txt` in the parent directory of `bro`.
 
-MIT License
+### 💡 Best Practices for Avoiding Mistakes:
 
-Copyright (c) [2025] [Pranto Paul]
+- **Create a full branch** first, then add more branches. Example:
+  - `/my-node-backend-project` → root directory
+    - `/config` → child directory
+    - `/controllers` → another child directory
+    - `config db.js & server.js .. controllers userController.js + authController.js`
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+### ⚡️ Quick Tips:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+- **Don't use**: `src bro a.txt+b.html&c.css` (incorrect format).
+- Always use **spaces** before and after `+`, `&`, and `..`.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+With these simple rules, the **Advanced Query** feature of _QuickPath_ makes creating files and folders a breeze. Happy coding! 😎
 
-## Contributing
+## 🔧 Extension Settings
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+This extension works out-of-the-box.  
+**No additional configuration required.** 🎉
 
-## License
+## 🐞 Known Issues
 
-[MIT](LICENSE)
+Currently, there are no known issues.  
+If you spot one, [report it here](https://github.com/Pranto-Paul/QuickPath/issues).
+
+## 🗒 Release Notes
+
+### 🆕 v2.0.0
+
+- 🚀 Initial launch of **QuickPath**
+- 🔥 Supports files and nested folder creation
+- ❤️ Get realtime suggestion
+- 🎯 Integrated with Command Palette
+- 💡 Keyboard-only interaction
+
+## 🤝 Contributing
+
+Have ideas to improve QuickPath?  
+You're welcome to contribute!
+
+1. Fork the repository 📂
+2. Create a feature branch 🌿
+3. Submit a pull request 🚀
+
+🔗 [Contribute on GitHub](https://github.com/Pranto-Paul/QuickPath)
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).  
+Made with ❤️ by [Pranto Paul](https://github.com/Pranto-Paul)
+
+## 📚 Useful Links
+
+- [🔗 GitHub Repository](https://github.com/Pranto-Paul/QuickPath)
+- [🔗 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=pranto-paul.quickpath)
+- [🐛 Report Issues](https://github.com/Pranto-Paul/QuickPath/issues)
+- [✨ Other Projects by Pranto](https://github.com/Pranto-Paul?tab=repositories)
+
+---
+
+> **Don’t break your flow — let QuickPath do the clicking for you.**
