@@ -15,7 +15,9 @@
 🎯 Execute **advanced path queries** — create multiple files and folders in one go  
 🚀 Blazingly fast and **seamless integration** with your workflow  
 🎹 Built for **keyboard-first developers** — keep your hands on the keys  
-🧩 **Zero setup required** — no config, no hassle, just install and go
+🧩 **Zero setup required** — no config, no hassle, just install and go  
+🗑️ Quickly **delete** files and folders from the command palette  
+✏️ Instantly **rename** files or folders with smart path detection
 
 ## ⚡ How It Works (Example)
 
@@ -102,6 +104,11 @@ Currently, there are no known issues.
 If you spot one, [report it here](https://github.com/Pranto-Paul/QuickPath/issues).
 
 ## 🗒 Release Notes
+
+### 🆕 v2.1.0
+
+- 🗑️ Added support for deleting files and folders
+- ✏️ Added support for renaming files and folders
 
 ### 🆕 v2.0.0
 
