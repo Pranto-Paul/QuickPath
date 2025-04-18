@@ -90,8 +90,63 @@ const createPath = (rootPath, arr) => {
     throw error;
   }
 };
+
+/**
+ * Delete file or folder based on path and isDir flag
+ * @param {string} targetPath - The full path to delete
+ * @param {boolean} isDir - Whether the target is a directory
+ */
+function deletePath(targetPath, isDir) {
+  try {
+    if (!fs.existsSync(targetPath)) {
+      vscode.window.showWarningMessage(`⚠️ Path does not exist: ${targetPath}`);
+      return;
+    }
+
+    if (isDir) {
+      fs.rmSync(targetPath, { recursive: true, force: true });
+      vscode.window.showInformationMessage(`🗑️ Folder deleted: ${targetPath}`);
+    } else {
+      fs.unlinkSync(targetPath);
+      vscode.window.showInformationMessage(`🗑️ File deleted: ${targetPath}`);
+    }
+  } catch (error) {
+    vscode.window.showErrorMessage(`❌ Failed to delete: ${error.message}`);
+    throw error;
+  }
+}
+
+/**
+ * Rename a file or folder
+ * @param {string} oldPath - The current full path of the file/folder
+ * @param {string} newName - The new name (not full path, just name)
+ * @param {boolean} isDir - Whether it's a directory or not
+ */
+function renamePath(oldPath, newName, isDir) {
+  try {
+    if (!fs.existsSync(oldPath)) {
+      vscode.window.showWarningMessage(`⚠️ Path does not exist: ${oldPath}`);
+      return;
+    }
+
+    const newPath = path.join(path.dirname(oldPath), newName);
+
+    fs.renameSync(oldPath, newPath);
+
+    vscode.window.showInformationMessage(
+      `${isDir ? "📁 Folder" : "📄 File"} renamed to: ${newName}`
+    );
+
+    return newPath;
+  } catch (error) {
+    vscode.window.showErrorMessage(`❌ Failed to rename: ${error.message}`);
+    throw error;
+  }
+}
 module.exports = {
   createFullPath,
   createPath,
   openFile,
+  deletePath,
+  renamePath,
 };

@@ -2,6 +2,7 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 const { parsePathString } = require("./parser.js");
+const { deletePath, renamePath } = require("./fileSystem.js");
 /**
  * Show path input with suggestion support
  * @param {string} rootPath
@@ -10,8 +11,8 @@ async function showPathInput(rootPath) {
   let currentPath = "";
 
   while (true) {
-    const dirPath = path.join(rootPath, currentPath);
-    let suggestions = [];
+    const dirPath = path.join(rootPath, currentPath); //provide full path
+    let suggestions = []; // arr which will store all files/folder from the dir
 
     try {
       const files = fs.readdirSync(dirPath, { withFileTypes: true });
@@ -27,12 +28,34 @@ async function showPathInput(rootPath) {
 
     const pick = [
       ...suggestions,
-      { label: "🔗 Enter Custom Path", alwaysShow: true },
+      {
+        kind: vscode.QuickPickItemKind.Separator,
+        label: "More Options",
+      },
+      {
+        label: "🔗 Enter Custom Path",
+        alwaysShow: true,
+        description: "use advanced query for nested structure!",
+      },
     ];
+
+    //push the Go Back option in the pick array if it is not the root dir
     if (rootPath !== dirPath)
       pick.push({ label: "🔙 Go Back", alwaysShow: true });
+
+    if (currentPath) {
+      pick.push({
+        label: `⚔️ Delete ${path.join(rootPath, currentPath)}`,
+        alwaysShow: true,
+      });
+      pick.push({
+        label: `✒️ Rename ${path.join(rootPath, currentPath)}`,
+        alwaysShow: true,
+      });
+    }
+
     const userChoice = await vscode.window.showQuickPick(pick, {
-      placeHolder: "Navigate folders with Tab or enter full path",
+      placeHolder: "Navigate files/folders with Tab or enter full path",
       matchOnDescription: true,
     });
 
@@ -41,9 +64,9 @@ async function showPathInput(rootPath) {
     if (userChoice.label === "🔗 Enter Custom Path") {
       const customInput = await vscode.window.showInputBox({
         prompt: "Enter file/folder path",
-        placeHolder: "e.g. src/components/Button/index.tsx",
+        placeHolder:
+          "e.g. src components pages Home.jsx + Contact.jsx .. utils Button.jsx & InputBox.jsx",
       });
-      console.log(path.join(currentPath, customInput));
       return parsePathString(path.join(currentPath, customInput));
     }
 
@@ -51,12 +74,38 @@ async function showPathInput(rootPath) {
       currentPath = path.dirname(currentPath);
       continue;
     }
+    if (userChoice.label === `⚔️ Delete ${path.join(rootPath, currentPath)}`) {
+      const is_dir = path.join(rootPath, currentPath).endsWith("\\");
+      deletePath(path.join(rootPath, currentPath), is_dir);
+      try {
+        currentPath = path.dirname(currentPath);
+        continue;
+      } catch (error) {
+        break;
+      }
+    }
+    if (userChoice.label === `✒️ Rename ${path.join(rootPath, currentPath)}`) {
+      const is_dir = path.join(rootPath, currentPath).endsWith("\\");
+      const customInput = await vscode.window.showInputBox({
+        prompt: "Enter new file/folder name",
+        placeHolder: "rename.txt",
+      });
+      renamePath(path.join(rootPath, currentPath), customInput, is_dir);
+
+      try {
+        currentPath = path.dirname(currentPath);
+        continue;
+      } catch (error) {
+        break;
+      }
+    }
 
     currentPath = path.join(currentPath, userChoice.label);
-    if (!userChoice.label.endsWith("/")) {
-      // it's a file
-      return [{ path: currentPath, isDir: false }];
-    }
+
+    // if (!userChoice.label.endsWith("/")) {
+    //   // it's a file
+    //   return [{ path: currentPath, isDir: false }];
+    // }
   }
 }
 
