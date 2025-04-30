@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vscode = require("vscode");
+const { customMessage } = require("./customMessage.js");
 
 /**
  * @param {string} root
@@ -18,22 +19,23 @@ function createFullPath(root, input) {
       if (isDir) {
         if (!fs.existsSync(fullPath)) {
           fs.mkdirSync(fullPath);
-          vscode.window.showInformationMessage("📁 Folder created.");
+          customMessage("created", true, fullPath);
         } else {
-          vscode.window.showInformationMessage("📁 Folder already exists.");
+          customMessage("alreadyExists", true, fullPath);
         }
-        return resolve(null); // Do not open folders
+        return resolve();
       }
 
       if (!fs.existsSync(fullPath)) {
         fs.writeFileSync(fullPath, "");
-        vscode.window.showInformationMessage(`✅ Created: ${input}`);
+        customMessage("created", false, fullPath);
       } else {
-        vscode.window.showInformationMessage(`📄 Opened: ${input}`);
+        customMessage("alreadyExists", false, fullPath);
       }
 
       resolve(fullPath);
     } catch (err) {
+      customMessage("error", false, fullPath);
       reject(err);
     }
   });
@@ -46,10 +48,11 @@ async function openFile(fullPath) {
   const doc = await vscode.workspace.openTextDocument(fullPath);
   await vscode.window.showTextDocument(doc);
 }
+
 /**
  * Create folders or files based on the provided path info
- * @param {string} rootPath - The base directory where paths will be created
- * @param {{ path: string; isDir: boolean; }[]} arr - List of paths and their types
+ * @param {string} rootPath
+ * @param {{ path: string; isDir: boolean; }[]} arr
  */
 const createPath = (rootPath, arr) => {
   try {
@@ -60,89 +63,76 @@ const createPath = (rootPath, arr) => {
       if (!fs.existsSync(fullPath)) {
         if (isDir) {
           fs.mkdirSync(fullPath, { recursive: true });
-          vscode.window.showInformationMessage(
-            `✅ Folder created: ${relativePath}`
-          );
+          customMessage("created", true, fullPath);
         } else {
           const dir = path.dirname(fullPath);
           if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
           }
           fs.writeFileSync(fullPath, "");
-          vscode.window.showInformationMessage(
-            `✅ File created: ${relativePath}`
-          );
+          customMessage("created", false, fullPath);
         }
       } else {
-        vscode.window.showInformationMessage(
-          isDir
-            ? `📁 Folder already exists: ${relativePath}`
-            : `📄 File already exists: ${relativePath}`
-        );
+        customMessage("alreadyExists", isDir, fullPath);
       }
     });
 
     return true;
   } catch (error) {
-    vscode.window.showErrorMessage(
-      `❌ Error while creating paths: ${error.message}`
-    );
+    customMessage("error", false, rootPath);
     throw error;
   }
 };
 
 /**
- * Delete file or folder based on path and isDir flag
- * @param {string} targetPath - The full path to delete
- * @param {boolean} isDir - Whether the target is a directory
+ * Delete file or folder
+ * @param {string} targetPath
+ * @param {boolean} isDir
  */
 function deletePath(targetPath, isDir) {
   try {
     if (!fs.existsSync(targetPath)) {
-      vscode.window.showWarningMessage(`⚠️ Path does not exist: ${targetPath}`);
+      customMessage("notExist", isDir, targetPath);
       return;
     }
 
     if (isDir) {
       fs.rmSync(targetPath, { recursive: true, force: true });
-      vscode.window.showInformationMessage(`🗑️ Folder deleted: ${targetPath}`);
     } else {
       fs.unlinkSync(targetPath);
-      vscode.window.showInformationMessage(`🗑️ File deleted: ${targetPath}`);
     }
+
+    customMessage("deleted", isDir, targetPath);
   } catch (error) {
-    vscode.window.showErrorMessage(`❌ Failed to delete: ${error.message}`);
+    customMessage("error", isDir, targetPath);
     throw error;
   }
 }
 
 /**
  * Rename a file or folder
- * @param {string} oldPath - The current full path of the file/folder
- * @param {string} newName - The new name (not full path, just name)
- * @param {boolean} isDir - Whether it's a directory or not
+ * @param {string} oldPath
+ * @param {string} newName
+ * @param {boolean} isDir
  */
 function renamePath(oldPath, newName, isDir) {
   try {
     if (!fs.existsSync(oldPath)) {
-      vscode.window.showWarningMessage(`⚠️ Path does not exist: ${oldPath}`);
+      customMessage("notExist", isDir, oldPath);
       return;
     }
 
     const newPath = path.join(path.dirname(oldPath), newName);
-
     fs.renameSync(oldPath, newPath);
 
-    vscode.window.showInformationMessage(
-      `${isDir ? "📁 Folder" : "📄 File"} renamed to: ${newName}`
-    );
-
+    customMessage("renamed", isDir, newPath);
     return newPath;
   } catch (error) {
-    vscode.window.showErrorMessage(`❌ Failed to rename: ${error.message}`);
+    customMessage("error", isDir, oldPath);
     throw error;
   }
 }
+
 module.exports = {
   createFullPath,
   createPath,

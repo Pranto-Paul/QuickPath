@@ -3,6 +3,8 @@ const fs = require("fs");
 const path = require("path");
 const { parsePathString } = require("./parser.js");
 const { deletePath, renamePath } = require("./fileSystem.js");
+const { customMessage } = require("../utils/customMessage.js");
+
 /**
  * Show path input with suggestion support
  * @param {string} rootPath
@@ -11,11 +13,13 @@ async function showPathInput(rootPath) {
   let currentPath = "";
 
   while (true) {
-    const dirPath = path.join(rootPath, currentPath); //provide full path
-    let suggestions = []; // arr which will store all files/folder from the dir
+    //provide path of navigation
+    const navigatedPath = path.join(rootPath, currentPath);
+    // arr, which will store all files/folder from the navigated path
+    let suggestions = [];
 
     try {
-      const files = fs.readdirSync(dirPath, { withFileTypes: true });
+      const files = fs.readdirSync(navigatedPath, { withFileTypes: true });
       suggestions = files.map((file) => {
         return {
           label: file.name + (file.isDirectory() ? "/" : ""),
@@ -26,6 +30,7 @@ async function showPathInput(rootPath) {
       // no suggestions if path is invalid
     }
 
+    // let user choose the path
     const pick = [
       ...suggestions,
       {
@@ -40,22 +45,22 @@ async function showPathInput(rootPath) {
     ];
 
     //push the Go Back option in the pick array if it is not the root dir
-    if (rootPath !== dirPath)
-      pick.push({ label: "🔙 Go Back", alwaysShow: true });
-
+    if (rootPath !== navigatedPath) {
+      pick.push({ label: "⬅️ Back", alwaysShow: true });
+    }
     if (currentPath) {
       pick.push({
-        label: `⚔️ Delete ${path.join(rootPath, currentPath)}`,
+        label: `✏️ Rename ${path.join(currentPath).replace(/\\/g, "/")}`,
         alwaysShow: true,
       });
       pick.push({
-        label: `✒️ Rename ${path.join(rootPath, currentPath)}`,
+        label: `🔥 Delete ${path.join(currentPath).replace(/\\/g, "/")}`,
         alwaysShow: true,
       });
     }
 
     const userChoice = await vscode.window.showQuickPick(pick, {
-      placeHolder: "Navigate files/folders with Tab or enter full path",
+      placeHolder: "Navigate files/folders with one click",
       matchOnDescription: true,
     });
 
@@ -70,12 +75,17 @@ async function showPathInput(rootPath) {
       return parsePathString(path.join(currentPath, customInput));
     }
 
-    if (userChoice.label === "🔙 Go Back") {
+    if (userChoice.label === "⬅️ Back") {
       currentPath = path.dirname(currentPath);
+      if (currentPath === ".") currentPath = ""; // if we are at the root dir, set it to empty string
       continue;
     }
-    if (userChoice.label === `⚔️ Delete ${path.join(rootPath, currentPath)}`) {
-      const is_dir = path.join(rootPath, currentPath).endsWith("\\");
+
+    if (
+      userChoice.label ===
+      `🔥 Delete ${path.join(currentPath).replace(/\\/g, "/")}`
+    ) {
+      const is_dir = path.extname(navigatedPath) === "";
       deletePath(path.join(rootPath, currentPath), is_dir);
       try {
         currentPath = path.dirname(currentPath);
@@ -84,8 +94,11 @@ async function showPathInput(rootPath) {
         break;
       }
     }
-    if (userChoice.label === `✒️ Rename ${path.join(rootPath, currentPath)}`) {
-      const is_dir = path.join(rootPath, currentPath).endsWith("\\");
+    if (
+      userChoice.label ===
+      `✏️ Rename ${path.join(currentPath).replace(/\\/g, "/")}`
+    ) {
+      const is_dir = path.extname(navigatedPath) === "";
       const customInput = await vscode.window.showInputBox({
         prompt: "Enter new file/folder name",
         placeHolder: "rename.txt",
