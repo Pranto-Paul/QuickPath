@@ -4,41 +4,116 @@ const vscode = require("vscode");
 const { customMessage } = require("./customMessage.js");
 
 /**
- * @param {string} root
- * @param {string} input
+ * Determines if a path is a directory based on extension
+ * @param {string} filePath - The path to check
+ * @returns {boolean} - True if directory, false if file
  */
-function createFullPath(root, input) {
-  return new Promise((resolve, reject) => {
-    const fullPath = path.join(root, input);
-    const dir = path.dirname(fullPath);
+function isDirectory(filePath) {
+  return path.extname(filePath) === "";
+}
 
-    try {
-      fs.mkdirSync(dir, { recursive: true });
+/**
+ * Create a file or folder and return its full path
+ * @param {string} rootPath - The root directory
+ * @param {string} relativePath - Relative path for the file/folder
+ * @returns {Promise<string | undefined>} - Full path of created file or undefined for folders
+ */
+async function createItem(rootPath, relativePath, providedIsDir) {
+  const fullPath = path.join(rootPath, relativePath);
+  const dir = path.dirname(fullPath);
+  const isDir =
+    providedIsDir !== undefined ? providedIsDir : isDirectory(fullPath);
 
-      const isDir = path.extname(fullPath) === "";
-      if (isDir) {
-        if (!fs.existsSync(fullPath)) {
-          fs.mkdirSync(fullPath);
-          customMessage("created", true, fullPath);
-        } else {
-          customMessage("alreadyExists", true, fullPath);
-        }
-        return resolve();
+  try {
+    // Create parent directories if they don't exist
+    fs.mkdirSync(dir, { recursive: true });
+
+    if (isDir) {
+      // Handle directory creation
+      if (!fs.existsSync(fullPath)) {
+        fs.mkdirSync(fullPath);
+        customMessage("created", true, fullPath);
+      } else {
+        customMessage("alreadyExists", true, fullPath);
       }
-
+      return;
+    } else {
+      // Handle file creation
       if (!fs.existsSync(fullPath)) {
         fs.writeFileSync(fullPath, "");
         customMessage("created", false, fullPath);
       } else {
         customMessage("alreadyExists", false, fullPath);
       }
-
-      resolve(fullPath);
-    } catch (err) {
-      customMessage("error", false, fullPath);
-      reject(err);
+      return fullPath;
     }
-  });
+  } catch (err) {
+    customMessage("error", isDir, fullPath);
+    throw err;
+  }
+}
+
+/**
+ * Create files/folders from a path string or array of paths
+ * Open files automatically after creation
+ *
+ * @param {string} rootPath - Base directory
+ * @param {string|string[]|{path: string, isDir?: boolean}[]} paths - Path(s) to create
+ * @param {Object} options - Additional options
+ * @param {boolean} [options.openAfterCreate=true] - Whether to open files after creation
+ * @returns {Promise<string[]>} - Array of created file paths
+ */
+async function create(rootPath, paths, options = { openAfterCreate: true }) {
+  const createdFiles = [];
+
+  try {
+    // Normalize input to array format
+    let itemsToCreate = [];
+
+    if (typeof paths === "string") {
+      // Single path string
+      itemsToCreate.push({
+        path: paths,
+        isDir: isDirectory(paths),
+      });
+    } else if (Array.isArray(paths)) {
+      // Handle array input - properly handle both string arrays and object arrays
+      itemsToCreate = paths.map((item) => {
+        if (typeof item === "string") {
+          return {
+            path: item,
+            isDir: isDirectory(item),
+          };
+        }
+        return {
+          path: item.path,
+          isDir: item.isDir !== undefined ? item.isDir : isDirectory(item.path),
+        };
+      });
+    }
+
+    // Process each item
+    for (const item of itemsToCreate) {
+      console.log(`Processing: ${item.path} | isDir: ${item.isDir}`);
+      // Pass the isDir property to createItem
+      const fullPath = await createItem(rootPath, item.path, item.isDir);
+
+      // Only add files to the result array
+      if (fullPath) {
+        createdFiles.push(fullPath);
+      }
+    }
+
+    // Open the first file if requested and any files were created
+    if (options.openAfterCreate && createdFiles.length > 0) {
+      await openFile(vscode.Uri.file(createdFiles[0]));
+    }
+
+    return createdFiles;
+  } catch (error) {
+    customMessage("error", false, rootPath);
+    throw error;
+  }
 }
 
 /**
@@ -50,46 +125,11 @@ async function openFile(fullPath) {
 }
 
 /**
- * Create folders or files based on the provided path info
- * @param {string} rootPath
- * @param {{ path: string; isDir: boolean; }[]} arr
- */
-const createPath = (rootPath, arr) => {
-  try {
-    arr.forEach(({ path: relativePath, isDir }) => {
-      const fullPath = path.join(rootPath, relativePath);
-      console.log(`Processing: ${fullPath} | isDir: ${isDir}`);
-
-      if (!fs.existsSync(fullPath)) {
-        if (isDir) {
-          fs.mkdirSync(fullPath, { recursive: true });
-          customMessage("created", true, fullPath);
-        } else {
-          const dir = path.dirname(fullPath);
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-          }
-          fs.writeFileSync(fullPath, "");
-          customMessage("created", false, fullPath);
-        }
-      } else {
-        customMessage("alreadyExists", isDir, fullPath);
-      }
-    });
-
-    return true;
-  } catch (error) {
-    customMessage("error", false, rootPath);
-    throw error;
-  }
-};
-
-/**
  * Delete file or folder
  * @param {string} targetPath
- * @param {boolean} isDir
+ * @param {boolean} [isDir] - Optional, will be auto-detected if not provided
  */
-function deletePath(targetPath, isDir) {
+function deletePath(targetPath, isDir = isDirectory(targetPath)) {
   try {
     if (!fs.existsSync(targetPath)) {
       customMessage("notExist", isDir, targetPath);
@@ -113,9 +153,9 @@ function deletePath(targetPath, isDir) {
  * Rename a file or folder
  * @param {string} oldPath
  * @param {string} newName
- * @param {boolean} isDir
+ * @param {boolean} [isDir] - Optional, will be auto-detected if not provided
  */
-function renamePath(oldPath, newName, isDir) {
+function renamePath(oldPath, newName, isDir = isDirectory(oldPath)) {
   try {
     if (!fs.existsSync(oldPath)) {
       customMessage("notExist", isDir, oldPath);
@@ -134,8 +174,7 @@ function renamePath(oldPath, newName, isDir) {
 }
 
 module.exports = {
-  createFullPath,
-  createPath,
+  create,
   openFile,
   deletePath,
   renamePath,

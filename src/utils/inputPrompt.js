@@ -2,8 +2,7 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 const { parsePathString } = require("./parser.js");
-const { deletePath, renamePath } = require("./fileSystem.js");
-const { customMessage } = require("../utils/customMessage.js");
+const { deletePath, renamePath, create } = require("./fileSystem.js");
 
 /**
  * Show path input with suggestion support
@@ -72,7 +71,7 @@ async function showPathInput(rootPath) {
         placeHolder:
           "e.g. src components pages Home.jsx + Contact.jsx .. utils Button.jsx & InputBox.jsx",
       });
-      return parsePathString(path.join(currentPath, customInput));
+      create(rootPath, parsePathString(path.join(currentPath, customInput)));
     }
 
     if (userChoice.label === "⬅️ Back") {
